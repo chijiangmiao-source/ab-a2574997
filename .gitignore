@@ -13,3 +13,7 @@ __pycache__/
 .yarn-cache/
 *.pyc
 *.pyo
+
+# build artifacts
+web/dist/
+.npm-cache/
