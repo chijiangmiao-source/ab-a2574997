@@ -1,0 +1,45 @@
+services:
+  backend:
+    build:
+      context: .
+      target: backend
+    image: congruence-audit-backend
+    ports:
+      # host port for direct API access (configurable)
+      - "${API_HOST_PORT:-8000}:8000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      target: frontend
+    image: congruence-audit-frontend
+    ports:
+      # host port for the audit page (configurable via HOST_PORT)
+      - "${HOST_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:80/ || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # One-shot verification: runs tests + build/import check + HTTP smoke once,
+  # then exits with its status code. Intended use:
+  #   docker compose build verify && docker compose up --exit-code-from verify verify
+  verify:
+    build:
+      context: .
+      target: verify
+    image: congruence-audit-verify
+    environment:
+      WEB_URL: http://frontend:80
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    restart: "no"

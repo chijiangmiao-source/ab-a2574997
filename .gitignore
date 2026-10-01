@@ -13,3 +13,7 @@ __pycache__/
 .yarn-cache/
 *.pyc
 *.pyo
+
+# build output
+frontend/dist/
+.npm-cache/
